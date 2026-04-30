@@ -5,7 +5,6 @@
     <title>Ethara Task Manager - Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Basic inline layout taaki UI bikhre nahi */
         body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
         .header { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .btn-danger { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
@@ -23,13 +22,12 @@
         <h2>Task Dashboard</h2>
         <div>
             <span id="userRoleBadge" style="margin-right: 15px; font-weight: bold; color: #555;">Loading Role...</span>
-            <!-- LOGOUT BUTTON KA FIX YAHAN HAI -->
             <button class="btn-danger" onclick="logoutUser()">Logout</button>
         </div>
     </div>
 
     <div class="grid">
-        <!-- ADMIN SECTION: Sirf Admin ko dikhega -->
+        <!-- ADMIN SECTION -->
         <div class="card hidden" id="adminSection">
             <h3>Admin Controls</h3>
             
@@ -46,15 +44,21 @@
                 <input type="text" id="task-title" placeholder="Task Title" required>
                 <input type="text" id="task-desc" placeholder="Task Description" required>
                 <input type="date" id="task-due" required>
-                <!-- DB IDs (Normally dropdowns hote hain, par backend connection ke liye IDs fine hain) -->
-                <input type="number" id="task-project-id" placeholder="Project ID (e.g. 1)" required>
-                <input type="number" id="task-assignee-id" placeholder="Assignee User ID (e.g. 2)" required>
+                
+                <!-- DROPDOWNS FOR PROJECTS AND USERS -->
+                <select id="task-project-id" required>
+                    <option value="">Loading Projects...</option>
+                </select>
+                
+                <select id="task-assignee-id" required>
+                    <option value="">Loading Users...</option>
+                </select>
                 
                 <button type="submit" class="btn-primary">Assign Task</button>
             </form>
         </div>
 
-        <!-- TASKS LIST: Sabko dikhega -->
+        <!-- TASKS LIST -->
         <div class="card" id="taskContainer" style="grid-column: span 2;">
             <h3>Your Assigned Tasks</h3>
             <div id="tasksList">Fetching your tasks...</div>

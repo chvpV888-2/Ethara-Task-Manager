@@ -1,5 +1,7 @@
 package com.ethara.taskmanager.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ethara.taskmanager.dto.AuthRequest;
+import com.ethara.taskmanager.model.User;
 import com.ethara.taskmanager.repository.UserRepository;
 import com.ethara.taskmanager.service.UserService;
 
@@ -31,6 +34,7 @@ public class AuthController {
         this.userService = userService;
     }
 
+    // 1. REGISTER NEW USER
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody AuthRequest request) {
         try {
@@ -41,6 +45,7 @@ public class AuthController {
         }
     }
 
+    // 2. LOGIN
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody AuthRequest request) {
         try {
@@ -52,19 +57,20 @@ public class AuthController {
         }
     }
 
-    // THE ULTIMATE DB NUKE HACK (Foreign Key bypass ke sath)
+    // 3. GET ALL USERS (New method for Frontend Dropdown)
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userRepository.findAll());
+    }
+
+    // 4. DB NUKE (Testing ke liye)
     @GetMapping("/clear-users")
     @Transactional
     public ResponseEntity<String> clearUsers(@Autowired EntityManager em) {
-        // 1. Constraints ko temporarily disable karo
         em.createNativeQuery("SET FOREIGN_KEY_CHECKS = 0").executeUpdate();
-        
-        // 2. Saari tables completely saaf karo
         em.createNativeQuery("TRUNCATE TABLE tasks").executeUpdate();
         em.createNativeQuery("TRUNCATE TABLE projects").executeUpdate();
         em.createNativeQuery("TRUNCATE TABLE users").executeUpdate();
-        
-        // 3. Constraints wapas on kar do
         em.createNativeQuery("SET FOREIGN_KEY_CHECKS = 1").executeUpdate();
         
         return ResponseEntity.ok("SAB KUCH SAAF! Database ekdum fresh ho gaya.");
