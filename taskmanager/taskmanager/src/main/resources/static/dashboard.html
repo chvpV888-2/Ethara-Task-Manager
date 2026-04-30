@@ -2,59 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Ethara AI - Dashboard</title>
+    <title>Ethara Task Manager - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; color: white; }
-        .btn-danger { background-color: #dc3545; }
-        .btn-primary { background-color: #007bff; }
-        
-        /* This hides the Admin section by default. We will un-hide it in JS if they have the Admin role! */
-        #admin-section { display: none; background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        
-        .task-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 10px; }
-        .overdue { border-left: 5px solid red; } /* Ethara AI requirement: highlight overdue tasks */
-        .on-time { border-left: 5px solid green; }
+        /* Basic inline layout taaki UI bikhre nahi */
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .btn-danger { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .hidden { display: none !important; }
+        .task-item { border-left: 4px solid #3498db; padding: 15px; margin-bottom: 10px; background: #f9f9f9; border-radius: 4px; }
+        .overdue { border-left-color: #e74c3c; background: #ffebeb; }
+        input, select, button { width: 100%; padding: 10px; margin-top: 10px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc; }
+        .btn-primary { background: #3498db; color: white; border: none; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-
     <div class="header">
         <h2>Task Dashboard</h2>
-        <button class="btn btn-danger" onclick="logout()">Logout</button>
-    </div>
-
-    <!-- ADMIN ONLY SECTION -->
-   <!-- ADMIN ONLY SECTION -->
-    <div id="admin-section">
-        <h3>Admin Controls: Create Task</h3>
-        <form onsubmit="createTask(event)">
-            <input type="text" id="task-title" placeholder="Task Title" required>
-            <input type="date" id="task-date" required>
-            
-            <!-- New Dynamic ID Inputs -->
-            <div style="margin-top: 10px;">
-                <label>Project ID:</label>
-                <input type="number" id="project-id-input" value="1" style="width: 50px;" required>
-                
-                <label>Assignee ID:</label>
-                <input type="number" id="assignee-id-input" value="1" style="width: 50px;" required>
-            </div>
-
-            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Assign Task</button>
-        </form>
-    </div>
-    <!-- TASK LIST SECTION -->
-    <div>
-        <h3>Your Tasks</h3>
-        <div id="task-list">
-            <!-- JavaScript will inject the tasks right here! -->
-            <p>Loading tasks...</p>
+        <div>
+            <span id="userRoleBadge" style="margin-right: 15px; font-weight: bold; color: #555;">Loading Role...</span>
+            <!-- LOGOUT BUTTON KA FIX YAHAN HAI -->
+            <button class="btn-danger" onclick="logoutUser()">Logout</button>
         </div>
     </div>
 
-    <!-- Connect our new Dashboard JavaScript file -->
+    <div class="grid">
+        <!-- ADMIN SECTION: Sirf Admin ko dikhega -->
+        <div class="card hidden" id="adminSection">
+            <h3>Admin Controls</h3>
+            
+            <hr style="margin: 15px 0;">
+            <h4>Create New Project</h4>
+            <form id="projectForm">
+                <input type="text" id="proj-name" placeholder="Enter Project Name" required>
+                <button type="submit" class="btn-primary">Add Project</button>
+            </form>
+
+            <hr style="margin: 25px 0 15px 0;">
+            <h4>Assign New Task</h4>
+            <form id="taskForm">
+                <input type="text" id="task-title" placeholder="Task Title" required>
+                <input type="text" id="task-desc" placeholder="Task Description" required>
+                <input type="date" id="task-due" required>
+                <!-- DB IDs (Normally dropdowns hote hain, par backend connection ke liye IDs fine hain) -->
+                <input type="number" id="task-project-id" placeholder="Project ID (e.g. 1)" required>
+                <input type="number" id="task-assignee-id" placeholder="Assignee User ID (e.g. 2)" required>
+                
+                <button type="submit" class="btn-primary">Assign Task</button>
+            </form>
+        </div>
+
+        <!-- TASKS LIST: Sabko dikhega -->
+        <div class="card" id="taskContainer" style="grid-column: span 2;">
+            <h3>Your Assigned Tasks</h3>
+            <div id="tasksList">Fetching your tasks...</div>
+        </div>
+    </div>
+
     <script src="dashboard.js"></script>
 </body>
 </html>
