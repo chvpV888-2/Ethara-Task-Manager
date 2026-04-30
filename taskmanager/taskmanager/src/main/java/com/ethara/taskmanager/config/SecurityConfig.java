@@ -30,35 +30,39 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-   @Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(csrf -> csrf.disable()) 
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
-            // 1. Yahan "/signup.html" add kardo
-            .requestMatchers("/", "/index.html", "/signup.html", "/dashboard.html", "/app.js", "/dashboard.js", "/static/**","/error").permitAll()
-            
-            // 2. Auth endpoints allow karo
-            .requestMatchers("/api/auth/**").permitAll() 
-            
-            // Baki sab secure rahega
-            .anyRequest().authenticated() 
-        )
-        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); 
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable()) 
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                // 1. FIX CORS PREFLIGHT: Allow browser OPTIONS requests globally
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                
+                // 2. FIX CSS/HTML 403: Allow ALL frontend files, styles, scripts, and the error route
+                .requestMatchers("/", "/*.html", "/*.css", "/*.js", "/static/**", "/error").permitAll()
+                
+                // 3. FIX AUTH 403: Allow Register and Login explicitly
+                .requestMatchers("/api/auth/**").permitAll() 
+                
+                // 4. Secure everything else
+                .anyRequest().authenticated() 
+            )
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); 
 
-    return http.build();
-}
+        return http.build();
+    }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // 4. ALLOWED ORIGINS: Add your Railway URL here!
+        // ALLOWED ORIGINS
         configuration.setAllowedOrigins(List.of(
             "http://127.0.0.1:5500", 
             "http://localhost:5500",
-            "https://ethara-task-manager-production.up.railway.app" // Add your actual Railway link
+            "https://ethara-task-manager-production.up.railway.app"
         ));
         
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
