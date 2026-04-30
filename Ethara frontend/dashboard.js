@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://ethara-task-manager-production.up.railway.app";
+const API_BASE_URL = "https://ethara-task-manager-production.up.railway.app/api";
 
 // 1. This runs the exact second the page loads
 window.onload = function() {

@@ -1,5 +1,5 @@
 // The address of our Java backend
-const API_BASE_URL = "https://ethara-task-manager-production.up.railway.app";
+const API_BASE_URL = "https://ethara-task-manager-production.up.railway.app/api";
 
 // This function runs when the user clicks the "Log In" button
 async function login(event) {
