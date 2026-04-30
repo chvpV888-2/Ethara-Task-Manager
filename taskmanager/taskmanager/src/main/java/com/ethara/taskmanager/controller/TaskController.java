@@ -1,51 +1,44 @@
 package com.ethara.taskmanager.controller;
 
-import java.util.List;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.ethara.taskmanager.dto.TaskRequest;
 import com.ethara.taskmanager.model.Task;
-import com.ethara.taskmanager.model.TaskStatus;
-import com.ethara.taskmanager.service.TaskService;
+import com.ethara.taskmanager.repository.TaskRepository;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/api/tasks")
 public class TaskController {
 
-    private final TaskService taskService;
+    @Autowired
+    private TaskRepository taskRepository;
 
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
-    }
-
-    // POST /api/tasks -> Creates a task
-    @PostMapping
-    public ResponseEntity<Task> createTask(@RequestBody TaskRequest request) {
-        return ResponseEntity.ok(taskService.createTask(request));
-    }
-
-    // GET /api/tasks -> Gets all tasks
+    // 1. GET ALL TASKS
     @GetMapping
     public ResponseEntity<List<Task>> getAllTasks() {
-        return ResponseEntity.ok(taskService.getAllTasks());
+        return ResponseEntity.ok(taskRepository.findAll());
     }
 
-    // PUT /api/tasks/1/status?newStatus=IN_PROGRESS -> Updates a specific task's status
+    // 2. CREATE NEW TASK
+    @PostMapping
+    public ResponseEntity<Task> createTask(@RequestBody Task task) {
+        if (task.getStatus() == null) {
+            task.setStatus("PENDING"); // Naya task hamesha pending
+        }
+        return ResponseEntity.ok(taskRepository.save(task));
+    }
+
+    // 3. UPDATE TASK STATUS (Member ye call karega)
     @PutMapping("/{id}/status")
-    public ResponseEntity<Task> updateStatus(
-            @PathVariable Long id, 
-            @RequestParam TaskStatus newStatus) {
-        return ResponseEntity.ok(taskService.updateTaskStatus(id, newStatus));
+    public ResponseEntity<?> updateTaskStatus(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        Task task = taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found"));
+        task.setStatus(request.get("status"));
+        taskRepository.save(task);
+        return ResponseEntity.ok("Status Updated");
     }
 }

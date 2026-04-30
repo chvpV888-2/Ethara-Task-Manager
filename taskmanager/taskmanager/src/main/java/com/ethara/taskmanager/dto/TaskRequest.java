@@ -6,7 +6,12 @@ public class TaskRequest {
     private String title;
     private LocalDate dueDate;
     private Long projectId; // We only need the ID of the project from the frontend
-    private Long assigneeId; // We only need the ID of the user
+    private Long assigneeId; 
+    // We only need the ID of the user
+    private String description;
+
+public String getDescription() { return description; }
+public void setDescription(String description) { this.description = description; }
 
     public Long getAssigneeId() {
         return assigneeId;

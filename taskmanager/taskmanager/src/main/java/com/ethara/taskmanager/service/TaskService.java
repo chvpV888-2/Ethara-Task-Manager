@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import com.ethara.taskmanager.dto.TaskRequest;
 import com.ethara.taskmanager.model.Project;
 import com.ethara.taskmanager.model.Task;
-import com.ethara.taskmanager.model.TaskStatus;
 import com.ethara.taskmanager.model.User;
 import com.ethara.taskmanager.repository.ProjectRepository;
 import com.ethara.taskmanager.repository.TaskRepository;
@@ -39,10 +38,14 @@ public class TaskService {
         // 3. Build the Task
         Task task = new Task();
         task.setTitle(request.getTitle());
+        
+        // MISSING DESCRIPTION FIX
+        task.setDescription(request.getDescription());
+        
         task.setDueDate(request.getDueDate());
         task.setProject(project);
         task.setAssignee(assignee);
-        task.setStatus(TaskStatus.PENDING); // New tasks always start as Pending
+        task.setStatus("PENDING"); // New tasks always start as Pending (Ab String hai)
 
         // 4. Save it
         return taskRepository.save(task);
@@ -52,8 +55,8 @@ public class TaskService {
         return taskRepository.findAll();
     }
 
-    // A special method so members can move tasks to IN_PROGRESS or COMPLETED
-    public Task updateTaskStatus(Long taskId, TaskStatus newStatus) {
+    // ENUM (TaskStatus) KO HATA KAR STRING KAR DIYA HAI
+    public Task updateTaskStatus(Long taskId, String newStatus) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Error: Task not found!"));
         

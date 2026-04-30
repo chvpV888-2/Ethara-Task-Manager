@@ -11,53 +11,58 @@ window.logoutUser = function() {
     window.location.href = 'index.html';
 };
 
-// Global Arrays to map IDs to Names
+// Global Arrays & Variables
 let usersData = [];
 let projectsData = [];
+let userRole = "MEMBER";
+let currentUsername = "";
 
 function checkRoleAndAdaptUI() {
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const role = payload.role || payload.roles || "MEMBER"; 
+        userRole = (payload.role || payload.roles || "MEMBER").toUpperCase(); 
+        currentUsername = payload.sub || payload.username || ""; // User ka naam JWT se liya
         
-        document.getElementById('userRoleBadge').textContent = `Role: ${role}`;
+        document.getElementById('userRoleBadge').textContent = `Role: ${userRole} | User: ${currentUsername}`;
 
-        if (role.toUpperCase() === 'ADMIN') {
+        if (userRole === 'ADMIN') {
             document.getElementById('adminSection').classList.remove('hidden');
             document.getElementById('taskContainer').style.gridColumn = 'span 1';
         }
     } catch (e) {
-        document.getElementById('adminSection').classList.remove('hidden');
+        console.error("Token parsing issue", e);
     }
 }
 
 // DROPDOWN DATA FETCH KARNA
 async function loadDropdowns() {
     try {
-        // Fetch All Users
         const userRes = await fetch(`${API_BASE_URL}/auth/users`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (userRes.ok) {
             usersData = await userRes.json();
             const assigneeSelect = document.getElementById('task-assignee-id');
-            assigneeSelect.innerHTML = '<option value="">Select Assignee User</option>';
-            usersData.forEach(u => {
-                assigneeSelect.innerHTML += `<option value="${u.id}">${u.username} (${u.role})</option>`;
-            });
+            if(assigneeSelect) {
+                assigneeSelect.innerHTML = '<option value="">Select Assignee User</option>';
+                usersData.forEach(u => {
+                    assigneeSelect.innerHTML += `<option value="${u.id}">${u.username} (${u.role})</option>`;
+                });
+            }
         }
 
-        // Fetch All Projects
         const projRes = await fetch(`${API_BASE_URL}/projects`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (projRes.ok) {
             projectsData = await projRes.json();
             const projSelect = document.getElementById('task-project-id');
-            projSelect.innerHTML = '<option value="">Select Project</option>';
-            projectsData.forEach(p => {
-                projSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-            });
+            if(projSelect) {
+                projSelect.innerHTML = '<option value="">Select Project</option>';
+                projectsData.forEach(p => {
+                    projSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+                });
+            }
         }
     } catch (error) {
         console.error("Error loading dropdown data:", error);
@@ -82,17 +87,13 @@ async function fetchTasks() {
         }
 
         const tasks = await response.json();
-        
-        if (tasks.length === 0) {
-            tasksList.innerHTML = "<p>No tasks found.</p>";
-            return;
-        }
-
         tasksList.innerHTML = ""; 
+        let taskCount = 0;
+
         const today = new Date().toISOString().split('T')[0];
 
         tasks.forEach(task => {
-            const isOverdue = task.dueDate && task.dueDate < today;
+            const isOverdue = task.dueDate && task.dueDate < today && task.status !== 'COMPLETED';
             
             // Map IDs to Names
             let assignedName = "Unknown User";
@@ -110,84 +111,118 @@ async function fetchTasks() {
                 if (foundProj) projectName = foundProj.name;
             }
 
-            // Fixed "undefined" description bug
+            // FILTER: Agar Admin nahi hai, toh sirf apne task dekhega
+            if (userRole !== 'ADMIN' && assignedName !== currentUsername) {
+                return; // Dusre ke task hide kar do
+            }
+            
+            taskCount++;
             const description = task.description || task.desc || "No description provided.";
+            const currentStatus = task.status || "PENDING";
+
+            // Status UI Logic: Admin badge dekhega, Member dropdown dekhega
+            let statusUI = "";
+            if (userRole === 'ADMIN') {
+                const badgeColor = currentStatus === 'COMPLETED' ? '#2ecc71' : '#f39c12';
+                statusUI = `<span style="background:${badgeColor}; color:white; padding:4px 8px; border-radius:12px; font-size:12px; font-weight:bold;">${currentStatus}</span>`;
+            } else {
+                statusUI = `
+                    <select onchange="updateTaskStatus(${task.id}, this.value)" style="width: auto; padding: 4px; margin-top: 0; font-size: 14px;">
+                        <option value="PENDING" ${currentStatus === 'PENDING' ? 'selected' : ''}>Pending</option>
+                        <option value="COMPLETED" ${currentStatus === 'COMPLETED' ? 'selected' : ''}>Completed</option>
+                    </select>
+                `;
+            }
 
             const taskEl = document.createElement('div');
             taskEl.className = `task-item ${isOverdue ? 'overdue' : ''}`;
             taskEl.innerHTML = `
-                <h4>${task.title} ${isOverdue ? '<span style="color:red; font-size:12px;">(OVERDUE)</span>' : ''}</h4>
-                <p>${description}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0;">${task.title} ${isOverdue ? '<span style="color:red; font-size:12px;">(OVERDUE)</span>' : ''}</h4>
+                    <div>${statusUI}</div>
+                </div>
+                <p style="margin-top: 10px;">${description}</p>
                 <small><strong>Due Date:</strong> ${task.dueDate || 'N/A'} | <strong>Project:</strong> ${projectName} | <strong>Assigned To:</strong> ${assignedName}</small>
             `;
             tasksList.appendChild(taskEl);
         });
+
+        if (taskCount === 0) {
+            tasksList.innerHTML = "<p>No tasks found for you.</p>";
+        }
 
     } catch (error) {
         tasksList.innerHTML = `<p style="color:red;">Error fetching tasks.</p>`;
     }
 }
 
-// CREATE PROJECT
-document.getElementById('projectForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('proj-name').value;
-
+// UPDATE STATUS FUNCTION (Member Call Karega)
+window.updateTaskStatus = async function(taskId, newStatus) {
     try {
-        const response = await fetch(`${API_BASE_URL}/projects`, {
-            method: 'POST',
+        const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/status`, {
+            method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: name })
+            body: JSON.stringify({ status: newStatus })
         });
 
         if (response.ok) {
-            alert("Project created!");
-            e.target.reset();
-            loadDropdowns(); // Dropdown list update karne ke liye
+            fetchTasks(); // UI refresh karne ke liye taaki color waghera update ho jaye
+        } else {
+            alert("Failed to update status");
         }
     } catch (error) {
-        console.error(error);
+        console.error("Error updating status:", error);
     }
+};
+
+// CREATE PROJECT
+document.getElementById('projectForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('proj-name').value;
+    try {
+        const response = await fetch(`${API_BASE_URL}/projects`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name })
+        });
+        if (response.ok) {
+            alert("Project created!");
+            e.target.reset();
+            loadDropdowns();
+        }
+    } catch (error) { console.error(error); }
 });
 
 // ASSIGN TASK
 document.getElementById('taskForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
     const taskData = {
         title: document.getElementById('task-title').value,
-        description: document.getElementById('task-desc').value, // Used 'description'
+        description: document.getElementById('task-desc').value,
         dueDate: document.getElementById('task-due').value,
         projectId: document.getElementById('task-project-id').value,
         assigneeId: document.getElementById('task-assignee-id').value
     };
-
     try {
         const response = await fetch(`${API_BASE_URL}/tasks`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify(taskData)
         });
-
         if (response.ok) {
             alert("Task assigned successfully!");
             e.target.reset();
             fetchTasks(); 
         }
-    } catch (error) {
-        console.error(error);
-    }
+    } catch (error) { console.error(error); }
 });
 
 // INITIALIZE APP
 document.addEventListener('DOMContentLoaded', async () => {
     checkRoleAndAdaptUI();
-    await loadDropdowns(); // Pehle dropdowns laao
-    fetchTasks();          // Phir tasks dikhao proper naam ke sath
+    await loadDropdowns(); 
+    fetchTasks();          
 });
