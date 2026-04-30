@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ethara AI - Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; color: white; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-primary { background-color: #007bff; }
+        
+        /* This hides the Admin section by default. We will un-hide it in JS if they have the Admin role! */
+        #admin-section { display: none; background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        
+        .task-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 10px; }
+        .overdue { border-left: 5px solid red; } /* Ethara AI requirement: highlight overdue tasks */
+        .on-time { border-left: 5px solid green; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>Task Dashboard</h2>
+        <button class="btn btn-danger" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- ADMIN ONLY SECTION -->
+   <!-- ADMIN ONLY SECTION -->
+    <div id="admin-section">
+        <h3>Admin Controls: Create Task</h3>
+        <form onsubmit="createTask(event)">
+            <input type="text" id="task-title" placeholder="Task Title" required>
+            <input type="date" id="task-date" required>
+            
+            <!-- New Dynamic ID Inputs -->
+            <div style="margin-top: 10px;">
+                <label>Project ID:</label>
+                <input type="number" id="project-id-input" value="1" style="width: 50px;" required>
+                
+                <label>Assignee ID:</label>
+                <input type="number" id="assignee-id-input" value="1" style="width: 50px;" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Assign Task</button>
+        </form>
+    </div>
+    <!-- TASK LIST SECTION -->
+    <div>
+        <h3>Your Tasks</h3>
+        <div id="task-list">
+            <!-- JavaScript will inject the tasks right here! -->
+            <p>Loading tasks...</p>
+        </div>
+    </div>
+
+    <!-- Connect our new Dashboard JavaScript file -->
+    <script src="dashboard.js"></script>
+</body>
+</html>
