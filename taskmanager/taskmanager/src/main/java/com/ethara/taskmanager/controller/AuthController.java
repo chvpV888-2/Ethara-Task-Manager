@@ -1,5 +1,6 @@
 package com.ethara.taskmanager.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,17 +24,24 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody AuthRequest request) {
-        userService.registerUser(request);
-        return ResponseEntity.ok("User registered successfully! Welcome to the team.");
+        try {
+            // Try to register the user
+            userService.registerUser(request);
+            return ResponseEntity.ok("User registered successfully! Welcome to the team.");
+        } catch (Exception e) {
+            // If user already exists, catch it and return a clean 400 Bad Request error
+            // This PREVENTS the 403 Forbidden error!
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
-    // NEW ENDPOINT: The Login Door
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody AuthRequest request) {
-        // We catch the request, pass it to the service, and get the Badge back
-        String vipBadge = userService.loginUser(request);
-        
-        // Hand the badge back to the user
-        return ResponseEntity.ok(vipBadge);
+        try {
+            String vipBadge = userService.loginUser(request);
+            return ResponseEntity.ok(vipBadge);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
     }
 }

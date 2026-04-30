@@ -38,7 +38,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
             // 1. Yahan "/signup.html" add kardo
-            .requestMatchers("/", "/index.html", "/signup.html", "/dashboard.html", "/app.js", "/dashboard.js", "/static/**", "/css/**", "/js/**").permitAll()
+            .requestMatchers("/", "/index.html", "/signup.html", "/dashboard.html", "/app.js", "/dashboard.js", "/static/**","/error").permitAll()
             
             // 2. Auth endpoints allow karo
             .requestMatchers("/api/auth/**").permitAll() 
