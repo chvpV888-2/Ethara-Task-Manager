@@ -1,5 +1,5 @@
 // The address of our Java backend
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = "https://ethara-task-manager-production.up.railway.app";
 
 // This function runs when the user clicks the "Log In" button
 async function login(event) {
