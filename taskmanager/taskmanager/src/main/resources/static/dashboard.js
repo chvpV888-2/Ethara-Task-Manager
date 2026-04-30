@@ -213,28 +213,56 @@ document.getElementById('projectForm')?.addEventListener('submit', async (e) => 
 });
 
 // ASSIGN TASK
-document.getElementById('taskForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const taskData = {
-        title: document.getElementById('task-title').value,
-        description: document.getElementById('task-desc').value,
-        dueDate: document.getElementById('task-due').value,
-        projectId: document.getElementById('task-project-id').value,
-        assigneeId: document.getElementById('task-assignee-id').value
-    };
-    try {
-        const response = await fetch(`${API_BASE_URL}/tasks`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify(taskData)
-        });
-        if (response.ok) {
-            alert("Task assigned successfully!");
-            e.target.reset();
-            fetchTasks(); 
+// ASSIGN TASK
+const taskForm = document.getElementById('taskForm');
+if (taskForm) {
+    taskForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Button ko "Assigning..." me badal do taaki pata chale click hua hai
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = "Assigning...";
+        submitBtn.disabled = true;
+
+        // IDs ko zabardasti Number (Integer) mein convert kar rahe hain (parseInt)
+        const taskData = {
+            title: document.getElementById('task-title').value,
+            description: document.getElementById('task-desc').value,
+            dueDate: document.getElementById('task-due').value,
+            projectId: parseInt(document.getElementById('task-project-id').value),
+            assigneeId: parseInt(document.getElementById('task-assignee-id').value)
+        };
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/tasks`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${token}`, 
+                    'Content-Type': 'application/json' 
+                },
+                body: JSON.stringify(taskData)
+            });
+
+            if (response.ok) {
+                alert("Task assigned successfully! 🎉");
+                e.target.reset();
+                fetchTasks(); // Naya task list mein add karne ke liye
+            } else {
+                // Agar Spring Boot ne mana kar diya, toh exact error dikhayega
+                const errorText = await response.text();
+                alert("Failed to assign task: " + errorText);
+            }
+        } catch (error) { 
+            console.error("Network Error:", error);
+            alert("Network issue! Server se connect nahi ho paya.");
+        } finally {
+            // Button wapas normal kar do
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
         }
-    } catch (error) { console.error(error); }
-});
+    });
+}
 
 // INITIALIZE APP
 document.addEventListener('DOMContentLoaded', async () => {
