@@ -6,12 +6,9 @@ if (!token) {
     window.location.href = 'index.html';
 }
 
-// SIRF YE FUNCTION REPLACE KARNA HAI, BAAKI SAB SAME RAHEGA
+// SMOOTH LOGOUT
 window.logoutUser = function() {
-    // 1. Body par fade-out class lagao (Jo humne CSS mein banayi hai)
     document.body.classList.add('fade-out');
-    
-    // 2. 400 milliseconds ruko (jab tak screen white fade na ho jaye), fir login pe bhejo
     setTimeout(() => {
         localStorage.removeItem('token');
         window.location.href = 'index.html';
@@ -27,17 +24,29 @@ let currentUsername = "";
 function checkRoleAndAdaptUI() {
     try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        userRole = (payload.role || payload.roles || "MEMBER").toUpperCase(); 
-        currentUsername = payload.sub || payload.username || ""; // User ka naam JWT se liya
+        // 'ROLE_ADMIN' ya 'ADMIN' dono ko handle karne ke liye
+        userRole = (payload.role || payload.roles || "MEMBER").toUpperCase().replace('ROLE_', ''); 
+        currentUsername = payload.sub || payload.username || ""; 
         
         document.getElementById('userRoleBadge').textContent = `Role: ${userRole} | User: ${currentUsername}`;
 
+        const adminSection = document.getElementById('adminSection');
+        const taskContainer = document.getElementById('taskContainer');
+
+        // STRICT CHECK: Agar Admin hai toh dikhao, warna force hide kar do
         if (userRole === 'ADMIN') {
-            document.getElementById('adminSection').classList.remove('hidden');
-            document.getElementById('taskContainer').style.gridColumn = 'span 1';
+            adminSection.classList.remove('hidden');
+            adminSection.style.display = 'block'; // Force Show
+            taskContainer.style.gridColumn = 'span 1';
+        } else {
+            adminSection.classList.add('hidden');
+            adminSection.style.display = 'none'; // Force Hide
+            taskContainer.style.gridColumn = '1 / -1'; // Pura space le lo
         }
     } catch (e) {
         console.error("Token parsing issue", e);
+        // Agar error aaye toh bhi default Member maan kar hide kar do
+        document.getElementById('adminSection').style.display = 'none';
     }
 }
 
@@ -155,11 +164,11 @@ async function fetchTasks() {
         });
 
         if (taskCount === 0) {
-            tasksList.innerHTML = "<p>No tasks found for you.</p>";
+            tasksList.innerHTML = "<p style='color: var(--text-muted);'>No tasks found for you.</p>";
         }
 
     } catch (error) {
-        tasksList.innerHTML = `<p style="color:red;">Error fetching tasks.</p>`;
+        tasksList.innerHTML = `<p style="color:var(--danger);">Error fetching tasks.</p>`;
     }
 }
 
