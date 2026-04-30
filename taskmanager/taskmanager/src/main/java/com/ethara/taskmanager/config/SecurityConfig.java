@@ -30,27 +30,26 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable()) 
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // 1. PUBLIC FRONTEND ACCESS: Allow everyone to see these files
-                .requestMatchers("/", "/index.html", "/dashboard.html", "/app.js", "/dashboard.js", "/static/**", "/css/**", "/js/**").permitAll()
-                
-                // 2. AUTH ACCESS: Allow everyone to Register and Login
-                .requestMatchers("/api/auth/**").permitAll() 
-                
-                // 3. SECURE EVERYTHING ELSE: Tasks and Projects require a JWT
-                .anyRequest().authenticated() 
-            )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); 
+   @Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .csrf(csrf -> csrf.disable()) 
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+            // 1. Yahan "/signup.html" add kardo
+            .requestMatchers("/", "/index.html", "/signup.html", "/dashboard.html", "/app.js", "/dashboard.js", "/static/**", "/css/**", "/js/**").permitAll()
+            
+            // 2. Auth endpoints allow karo
+            .requestMatchers("/api/auth/**").permitAll() 
+            
+            // Baki sab secure rahega
+            .anyRequest().authenticated() 
+        )
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); 
 
-        return http.build();
-    }
-
+    return http.build();
+}
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
