@@ -33,12 +33,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Tell Spring to use our CORS configuration below
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable()) 
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // 1. PUBLIC FRONTEND ACCESS: Allow everyone to see these files
+                .requestMatchers("/", "/index.html", "/dashboard.html", "/app.js", "/dashboard.js", "/static/**", "/css/**", "/js/**").permitAll()
+                
+                // 2. AUTH ACCESS: Allow everyone to Register and Login
                 .requestMatchers("/api/auth/**").permitAll() 
+                
+                // 3. SECURE EVERYTHING ELSE: Tasks and Projects require a JWT
                 .anyRequest().authenticated() 
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); 
@@ -46,13 +51,16 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 2. THIS IS THE MISSING SECTION
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // This is where you add your Live Server address!
-        configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "http://localhost:5500"));
+        // 4. ALLOWED ORIGINS: Add your Railway URL here!
+        configuration.setAllowedOrigins(List.of(
+            "http://127.0.0.1:5500", 
+            "http://localhost:5500",
+            "https://ethara-task-manager-production.up.railway.app" // Add your actual Railway link
+        ));
         
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
