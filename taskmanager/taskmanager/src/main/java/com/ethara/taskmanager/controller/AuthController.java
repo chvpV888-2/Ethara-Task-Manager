@@ -15,6 +15,8 @@ import com.ethara.taskmanager.service.UserService;
 @CrossOrigin(origins = "*")
 @RequestMapping("/api/auth")
 public class AuthController {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.ethara.taskmanager.repository.UserRepository userRepository;
 
     private final UserService userService;
 
@@ -41,7 +43,15 @@ public class AuthController {
             String vipBadge = userService.loginUser(request);
             return ResponseEntity.ok(vipBadge);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            // YE LINE ASLI ERROR BATAEGI RAILWAY LOGS MEIN
+            e.printStackTrace(); 
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: " + e.getMessage());
         }
     }
+
+@org.springframework.web.bind.annotation.GetMapping("/clear-users")
+public org.springframework.http.ResponseEntity<String> clearUsers() {
+    userRepository.deleteAll();
+    return org.springframework.http.ResponseEntity.ok("Database saaf! Saare purane users delete ho gaye.");
+}
 }
