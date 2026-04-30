@@ -2,26 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ethara Task Manager - Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .btn-danger { background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
-        .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .hidden { display: none !important; }
-        .task-item { border-left: 4px solid #3498db; padding: 15px; margin-bottom: 10px; background: #f9f9f9; border-radius: 4px; }
-        .overdue { border-left-color: #e74c3c; background: #ffebeb; }
-        input, select, button { width: 100%; padding: 10px; margin-top: 10px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc; }
-        .btn-primary { background: #3498db; color: white; border: none; cursor: pointer; font-weight: bold; }
-    </style>
 </head>
-<body>
+<body class="dashboard-body">
     <div class="header">
         <h2>Task Dashboard</h2>
         <div>
-            <span id="userRoleBadge" style="margin-right: 15px; font-weight: bold; color: #555;">Loading Role...</span>
+            <span id="userRoleBadge" style="margin-right: 15px; font-weight: 600; color: var(--text-muted);">Loading Role...</span>
             <button class="btn-danger" onclick="logoutUser()">Logout</button>
         </div>
     </div>

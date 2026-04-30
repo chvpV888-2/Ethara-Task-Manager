@@ -2,23 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Ethara Task Manager - Signup</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethara - Sign Up</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h2>Register Member/Admin</h2>
+    <div class="auth-container">
+        <h2>Join Ethara</h2>
+        <p class="subtitle">Create an account to start managing tasks.</p>
+
         <form id="signupForm">
-            <input type="text" id="reg-username" placeholder="Username" required>
-            <input type="password" id="reg-password" placeholder="Password" required>
-            <label for="reg-role">Choose Role:</label>
-            <select id="reg-role">
-                <option value="MEMBER">Member</option>
-                <option value="ADMIN">Admin</option>
+            <input type="text" id="reg-username" placeholder="Choose Username" required>
+            <input type="password" id="reg-password" placeholder="Create Password" required>
+            
+            <select id="reg-role" required>
+                <option value="MEMBER">Team Member</option>
+                <option value="ADMIN">Administrator</option>
             </select>
-            <button type="submit">Sign Up</button>
+            
+            <button type="submit">Create Account</button>
         </form>
-        <p><a href="index.html">Back to Login</a></p>
+
+        <p>Already have an account? <a href="index.html">Login here</a></p>
     </div>
     <script src="app.js"></script>
 </body>

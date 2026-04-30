@@ -6,9 +6,16 @@ if (!token) {
     window.location.href = 'index.html';
 }
 
+// SIRF YE FUNCTION REPLACE KARNA HAI, BAAKI SAB SAME RAHEGA
 window.logoutUser = function() {
-    localStorage.removeItem('token');
-    window.location.href = 'index.html';
+    // 1. Body par fade-out class lagao (Jo humne CSS mein banayi hai)
+    document.body.classList.add('fade-out');
+    
+    // 2. 400 milliseconds ruko (jab tak screen white fade na ho jaye), fir login pe bhejo
+    setTimeout(() => {
+        localStorage.removeItem('token');
+        window.location.href = 'index.html';
+    }, 400); 
 };
 
 // Global Arrays & Variables
